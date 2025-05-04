@@ -12,6 +12,37 @@ const capybaraImages = [
   "https://cdn.poehali.dev/files/d0196444-2893-4629-b32f-d80078df6597.jpeg"
 ];
 
+// Мемы с напитками
+const drinkMemes = [
+  {
+    image: "https://cdn.poehali.dev/files/40f660e8-8548-4e40-b4fd-20a287772558.jpg",
+    name: "Fanter",
+    color: "orange",
+    bgColor: "bg-orange-500",
+    bgColorLight: "bg-orange-400",
+    bgColorDark: "bg-orange-600",
+    textColor: "text-orange-600"
+  },
+  {
+    image: "https://cdn.poehali.dev/files/2fba266a-3d13-4376-a392-ebbda11b7c40.jpg",
+    name: "Pepes",
+    color: "blue",
+    bgColor: "bg-blue-500",
+    bgColorLight: "bg-blue-400",
+    bgColorDark: "bg-blue-600",
+    textColor: "text-blue-600"
+  },
+  {
+    image: "https://cdn.poehali.dev/files/537d1ec7-e51a-406e-ab13-3f84e8fb0709.jpeg",
+    name: "Cokey Cola",
+    color: "red",
+    bgColor: "bg-red-500",
+    bgColorLight: "bg-red-400",
+    bgColorDark: "bg-red-600",
+    textColor: "text-red-600"
+  }
+];
+
 const CapybaraComputer = () => {
   const [isOn, setIsOn] = useState(false);
   const [startupComplete, setStartupComplete] = useState(false);
@@ -24,7 +55,8 @@ const CapybaraComputer = () => {
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [virusActive, setVirusActive] = useState(false);
-  const [fantaVirusActive, setFantaVirusActive] = useState(false);
+  const [drinkVirusActive, setDrinkVirusActive] = useState(false);
+  const [currentDrinkMeme, setCurrentDrinkMeme] = useState(0);
   const [glitchIntensity, setGlitchIntensity] = useState(0);
   
   // Симуляция загрузки компьютера
@@ -39,13 +71,13 @@ const CapybaraComputer = () => {
   
   // Эффект глитча
   useEffect(() => {
-    if (fantaVirusActive) {
+    if (drinkVirusActive) {
       const interval = setInterval(() => {
         setGlitchIntensity(Math.random());
       }, 100);
       return () => clearInterval(interval);
     }
-  }, [fantaVirusActive]);
+  }, [drinkVirusActive]);
   
   // Обработчик открытия файла
   const handleFileClick = (file: string) => {
@@ -65,10 +97,17 @@ const CapybaraComputer = () => {
     setSelectedImage(index);
   };
   
-  // Активация Fanta-вируса
-  const handleFantaVirus = () => {
-    setFantaVirusActive(true);
+  // Активация вируса напитка
+  const handleDrinkVirus = () => {
+    setDrinkVirusActive(true);
+    setCurrentDrinkMeme(0);
     setVirusActive(false);
+  };
+  
+  // Следующий вирус напитка
+  const handleNextDrinkVirus = () => {
+    const nextIndex = (currentDrinkMeme + 1) % drinkMemes.length;
+    setCurrentDrinkMeme(nextIndex);
   };
   
   // Выключение компьютера
@@ -77,14 +116,14 @@ const CapybaraComputer = () => {
     setStartupComplete(false);
     setActiveFile(null);
     setVirusActive(false);
-    setFantaVirusActive(false);
+    setDrinkVirusActive(false);
     setSelectedImage(null);
   };
   
   // Перезагрузка системы
   const handleReboot = () => {
     setVirusActive(false);
-    setFantaVirusActive(false);
+    setDrinkVirusActive(false);
     setStartupComplete(false);
     setActiveFile(null);
     
@@ -98,6 +137,9 @@ const CapybaraComputer = () => {
     return `${(Math.random() * 10 - 5) * glitchIntensity}px`;
   };
   
+  // Текущий мем напитка
+  const currentMeme = drinkMemes[currentDrinkMeme];
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4">
       {/* Корпус компьютера */}
@@ -106,8 +148,8 @@ const CapybaraComputer = () => {
         <div 
           className={`w-full h-full p-4 ${
             isOn 
-              ? fantaVirusActive 
-                ? "bg-orange-500" 
+              ? drinkVirusActive 
+                ? currentMeme.bgColor
                 : "bg-[#003366]" 
               : "bg-black"
           } rounded-sm relative overflow-hidden`}
@@ -132,30 +174,30 @@ const CapybaraComputer = () => {
             </div>
           )}
           
-          {/* Fanta Вирус */}
-          {fantaVirusActive && (
-            <div className="absolute inset-0 z-20 bg-orange-500 flex flex-col items-center justify-center overflow-hidden">
+          {/* Вирус напитка */}
+          {drinkVirusActive && (
+            <div className={`absolute inset-0 z-20 ${currentMeme.bgColor} flex flex-col items-center justify-center overflow-hidden`}>
               {/* Глитч-эффекты */}
               <div 
-                className="absolute inset-0 bg-orange-400 opacity-80 z-10"
+                className={`absolute inset-0 ${currentMeme.bgColorLight} opacity-80 z-10`}
                 style={{ 
                   clipPath: `polygon(0 ${getRandomOffset()}, 100% ${getRandomOffset()}, 100% ${getRandomOffset()}, 0 ${getRandomOffset()})`,
                   transform: `translate(${getRandomOffset()}, ${getRandomOffset()}) skew(${glitchIntensity * 10}deg)`
                 }}
               ></div>
               <div 
-                className="absolute inset-0 bg-orange-600 opacity-60 z-10"
+                className={`absolute inset-0 ${currentMeme.bgColorDark} opacity-60 z-10`}
                 style={{ 
                   clipPath: `polygon(0 ${getRandomOffset()}, 100% ${getRandomOffset()}, 100% calc(100% - ${getRandomOffset()}), 0 ${getRandomOffset()})`,
                   transform: `translate(${getRandomOffset()}, ${getRandomOffset()}) skew(${-glitchIntensity * 5}deg)`
                 }}
               ></div>
               
-              {/* Мем с Fanta */}
+              {/* Мем с напитком */}
               <div className="relative z-30 flex flex-col items-center">
                 <img 
-                  src="https://cdn.poehali.dev/files/40f660e8-8548-4e40-b4fd-20a287772558.jpg" 
-                  alt="Fanter" 
+                  src={currentMeme.image} 
+                  alt={currentMeme.name} 
                   className="w-3/4 max-w-80 h-auto object-contain mb-6 border-4 border-white shadow-lg"
                   style={{ 
                     transform: `translate(${getRandomOffset()}, ${getRandomOffset()})`,
@@ -163,23 +205,34 @@ const CapybaraComputer = () => {
                   }}
                 />
                 <div className="text-white text-2xl font-bold mb-6" style={{ transform: `translate(${getRandomOffset()}, ${getRandomOffset()})` }}>
-                  FANTER ВИРУС АКТИВИРОВАН!
+                  {currentMeme.name.toUpperCase()} ВИРУС АКТИВИРОВАН!
                 </div>
-                <div className="text-white bg-red-600 p-4 rounded-lg animate-pulse mb-6 text-center">
-                  SYSTEM OVERLOAD: 99.9% КАПИБАРСКОГО ОРАНЖЕВОГО НАПИТКА
+                <div className="text-white bg-gray-900 p-4 rounded-lg animate-pulse mb-6 text-center">
+                  SYSTEM OVERLOAD: 99.9% КАПИБАРСКИХ ДАННЫХ ЗАМЕНЕНО НА {currentMeme.name.toUpperCase()}
                 </div>
-                <Button 
-                  onClick={handleReboot}
-                  className="bg-white hover:bg-gray-200 text-orange-600 font-bold"
-                  style={{ transform: `scale(${1 + glitchIntensity * 0.2})` }}
-                >
-                  <Icon name="RefreshCcw" className="mr-2" /> ПЕРЕЗАГРУЗИТЬ СИСТЕМУ
-                </Button>
+                
+                <div className="flex space-x-4">
+                  <Button 
+                    onClick={handleReboot}
+                    className={`bg-white hover:bg-gray-200 ${currentMeme.textColor} font-bold`}
+                    style={{ transform: `scale(${1 + glitchIntensity * 0.1})` }}
+                  >
+                    <Icon name="RefreshCcw" className="mr-2" /> ПЕРЕЗАГРУЗИТЬ
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleNextDrinkVirus}
+                    className={`bg-white hover:bg-gray-200 ${currentMeme.textColor} font-bold`}
+                    style={{ transform: `scale(${1 + glitchIntensity * 0.1})` }}
+                  >
+                    <Icon name="Gamepad2" className="mr-2" /> ПОПРОБОВАТЬ ЕЩЁ РАЗ
+                  </Button>
+                </div>
               </div>
             </div>
           )}
           
-          {isOn && startupComplete && !fantaVirusActive && (
+          {isOn && startupComplete && !drinkVirusActive && (
             <div className="flex flex-col h-full text-white font-mono">
               {/* Верхняя панель */}
               <div className="flex justify-between items-center bg-blue-900 p-2 mb-4">
@@ -208,7 +261,7 @@ const CapybaraComputer = () => {
                     </Button>
                     
                     <Button 
-                      onClick={handleFantaVirus}
+                      onClick={handleDrinkVirus}
                       className="bg-orange-500 hover:bg-orange-600"
                     >
                       <Icon name="Gamepad2" className="mr-2" /> ПОИГРАТЬ В ВИРУС
@@ -300,7 +353,7 @@ const CapybaraComputer = () => {
       </Card>
       
       {/* Диалог для просмотра фотографий */}
-      <Dialog open={selectedImage !== null && !virusActive && !fantaVirusActive} onOpenChange={() => setSelectedImage(null)}>
+      <Dialog open={selectedImage !== null && !virusActive && !drinkVirusActive} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-md mx-auto">
           {selectedImage !== null && (
             <div>
