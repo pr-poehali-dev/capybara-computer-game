@@ -24,6 +24,8 @@ const CapybaraComputer = () => {
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [virusActive, setVirusActive] = useState(false);
+  const [fantaVirusActive, setFantaVirusActive] = useState(false);
+  const [glitchIntensity, setGlitchIntensity] = useState(0);
   
   // Симуляция загрузки компьютера
   useEffect(() => {
@@ -34,6 +36,16 @@ const CapybaraComputer = () => {
       return () => clearTimeout(timer);
     }
   }, [isOn]);
+  
+  // Эффект глитча
+  useEffect(() => {
+    if (fantaVirusActive) {
+      const interval = setInterval(() => {
+        setGlitchIntensity(Math.random());
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [fantaVirusActive]);
   
   // Обработчик открытия файла
   const handleFileClick = (file: string) => {
@@ -53,13 +65,37 @@ const CapybaraComputer = () => {
     setSelectedImage(index);
   };
   
+  // Активация Fanta-вируса
+  const handleFantaVirus = () => {
+    setFantaVirusActive(true);
+    setVirusActive(false);
+  };
+  
   // Выключение компьютера
   const handleTurnOff = () => {
     setIsOn(false);
     setStartupComplete(false);
     setActiveFile(null);
     setVirusActive(false);
+    setFantaVirusActive(false);
     setSelectedImage(null);
+  };
+  
+  // Перезагрузка системы
+  const handleReboot = () => {
+    setVirusActive(false);
+    setFantaVirusActive(false);
+    setStartupComplete(false);
+    setActiveFile(null);
+    
+    setTimeout(() => {
+      setStartupComplete(true);
+    }, 2000);
+  };
+  
+  // Получение случайного сдвига для эффекта глитча
+  const getRandomOffset = () => {
+    return `${(Math.random() * 10 - 5) * glitchIntensity}px`;
   };
   
   return (
@@ -67,7 +103,15 @@ const CapybaraComputer = () => {
       {/* Корпус компьютера */}
       <Card className="w-full max-w-md h-[70vh] bg-gray-800 border-2 border-gray-700 rounded-md overflow-hidden shadow-xl relative">
         {/* Экран компьютера */}
-        <div className={`w-full h-full p-4 ${isOn ? "bg-[#003366]" : "bg-black"} rounded-sm`}>
+        <div 
+          className={`w-full h-full p-4 ${
+            isOn 
+              ? fantaVirusActive 
+                ? "bg-orange-500" 
+                : "bg-[#003366]" 
+              : "bg-black"
+          } rounded-sm relative overflow-hidden`}
+        >
           {!isOn && (
             <div className="flex flex-col items-center justify-center h-full">
               <Button 
@@ -88,7 +132,54 @@ const CapybaraComputer = () => {
             </div>
           )}
           
-          {isOn && startupComplete && (
+          {/* Fanta Вирус */}
+          {fantaVirusActive && (
+            <div className="absolute inset-0 z-20 bg-orange-500 flex flex-col items-center justify-center overflow-hidden">
+              {/* Глитч-эффекты */}
+              <div 
+                className="absolute inset-0 bg-orange-400 opacity-80 z-10"
+                style={{ 
+                  clipPath: `polygon(0 ${getRandomOffset()}, 100% ${getRandomOffset()}, 100% ${getRandomOffset()}, 0 ${getRandomOffset()})`,
+                  transform: `translate(${getRandomOffset()}, ${getRandomOffset()}) skew(${glitchIntensity * 10}deg)`
+                }}
+              ></div>
+              <div 
+                className="absolute inset-0 bg-orange-600 opacity-60 z-10"
+                style={{ 
+                  clipPath: `polygon(0 ${getRandomOffset()}, 100% ${getRandomOffset()}, 100% calc(100% - ${getRandomOffset()}), 0 ${getRandomOffset()})`,
+                  transform: `translate(${getRandomOffset()}, ${getRandomOffset()}) skew(${-glitchIntensity * 5}deg)`
+                }}
+              ></div>
+              
+              {/* Мем с Fanta */}
+              <div className="relative z-30 flex flex-col items-center">
+                <img 
+                  src="https://cdn.poehali.dev/files/40f660e8-8548-4e40-b4fd-20a287772558.jpg" 
+                  alt="Fanter" 
+                  className="w-3/4 max-w-80 h-auto object-contain mb-6 border-4 border-white shadow-lg"
+                  style={{ 
+                    transform: `translate(${getRandomOffset()}, ${getRandomOffset()})`,
+                    filter: `hue-rotate(${glitchIntensity * 30}deg) contrast(${1 + glitchIntensity})`
+                  }}
+                />
+                <div className="text-white text-2xl font-bold mb-6" style={{ transform: `translate(${getRandomOffset()}, ${getRandomOffset()})` }}>
+                  FANTER ВИРУС АКТИВИРОВАН!
+                </div>
+                <div className="text-white bg-red-600 p-4 rounded-lg animate-pulse mb-6 text-center">
+                  SYSTEM OVERLOAD: 99.9% КАПИБАРСКОГО ОРАНЖЕВОГО НАПИТКА
+                </div>
+                <Button 
+                  onClick={handleReboot}
+                  className="bg-white hover:bg-gray-200 text-orange-600 font-bold"
+                  style={{ transform: `scale(${1 + glitchIntensity * 0.2})` }}
+                >
+                  <Icon name="RefreshCcw" className="mr-2" /> ПЕРЕЗАГРУЗИТЬ СИСТЕМУ
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {isOn && startupComplete && !fantaVirusActive && (
             <div className="flex flex-col h-full text-white font-mono">
               {/* Верхняя панель */}
               <div className="flex justify-between items-center bg-blue-900 p-2 mb-4">
@@ -106,13 +197,23 @@ const CapybaraComputer = () => {
                     alt="Капибара вирус" 
                     className="w-64 h-64 object-cover mb-4 border-4 border-red-500 animate-[shake_0.5s_infinite]" 
                   />
-                  <div className="text-white text-center mb-4">capybara.avi захватил контроль над системой!</div>
-                  <Button 
-                    onClick={() => setVirusActive(false)}
-                    className="bg-red-700 hover:bg-red-800"
-                  >
-                    <Icon name="ShieldAlert" className="mr-2" /> УДАЛИТЬ ВИРУС
-                  </Button>
+                  <div className="text-white text-center mb-6">capybara.avi захватил контроль над системой!</div>
+                  
+                  <div className="flex space-x-4">
+                    <Button 
+                      onClick={() => setVirusActive(false)}
+                      className="bg-red-700 hover:bg-red-800"
+                    >
+                      <Icon name="ShieldAlert" className="mr-2" /> УДАЛИТЬ ВИРУС
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleFantaVirus}
+                      className="bg-orange-500 hover:bg-orange-600"
+                    >
+                      <Icon name="Gamepad2" className="mr-2" /> ПОИГРАТЬ В ВИРУС
+                    </Button>
+                  </div>
                 </div>
               )}
               
@@ -199,7 +300,7 @@ const CapybaraComputer = () => {
       </Card>
       
       {/* Диалог для просмотра фотографий */}
-      <Dialog open={selectedImage !== null && !virusActive} onOpenChange={() => setSelectedImage(null)}>
+      <Dialog open={selectedImage !== null && !virusActive && !fantaVirusActive} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-md mx-auto">
           {selectedImage !== null && (
             <div>
